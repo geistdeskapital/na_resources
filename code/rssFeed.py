@@ -37,7 +37,7 @@ def main():
 			
 			##write line to .csv
 			try:
-				with open('Sources/rss_test.csv', 'a') as file:
+				with open('', 'a') as file:
 					results.to_csv(file, sep=',', header=False, index=False, \
 					encoding='cp1252')
 			except:
