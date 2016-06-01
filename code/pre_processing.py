@@ -1,6 +1,6 @@
 """
 pre_processing.py cleans html elements
-from scraped article and removes extraneous text
+from scraped article
 """
 
 import requests
@@ -12,35 +12,41 @@ from numpy import genfromtxt
 
 
 def getArticleText(url):
-	r = requests.request('GET', url, timeout=.02)
-	print('Scraping: ' + url)
+	try:
+		r = requests.request('GET', url, timeout=3.1)
+		print('Scraping: ' + url)
 	
+		soup=BeautifulSoup(r.content)
 	
-	soup=BeautifulSoup(r.content)
+		##remove all script and style elements
+		for script in soup(['script', 'style']):
+			script.extract()
 	
-	##remove all script and style elements
-	for script in soup(['script', 'style']):
-		script.extract()
-	
-	text = soup.get_text()
+		text = soup.get_text()
+	except:
+		text = ''
 
 	return text
 
 def filterArticle(rawText, title):
-	filterText = re.sub('^.*'+title, '', rawText, re.IGNORECASE, \
-	re.DOTALL)
-	m = re.search('\n[A-Z][^\n\.]+\.(.|\n){150,1500}[^\.\n{2,10}?]*?\.', \
-	filterText, re.DOTALL)
+
+	m = re.search('[A-Z][^\n\.]+\..{,4000}\.\s{,3}[A-Z][^\.\n]*\.', \
+	rawText, re.DOTALL)
+	
 	if m is not None:
 		filterText = m.group(0)
-	return filterText
+		filterText = re.sub('\n', '', filterText)
+		print(filterText.encode('utf-8', 'ignore'))
+		return filterText
+	else:
+		return ''
 
 def main():
 	"""
 	import rss results
 	"""
 	data = pd.read_csv('Sources/rss_test.csv', sep=',', encoding='cp1252')
-	data = data[:20]
+	data = data[:100]
 
 	"""
 	Iterate through urls and scrape/filter text
